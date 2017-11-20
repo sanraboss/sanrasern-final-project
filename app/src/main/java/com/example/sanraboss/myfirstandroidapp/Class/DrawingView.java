@@ -101,22 +101,38 @@ public class DrawingView extends View {
     }
 
     private void touch_up() {
-        mPath.lineTo(mX, mY);
+//        mPath.lineTo(mX, mY);
+        AnalyticPoint point = new AnalyticPoint(pointName, mX, mY);
+        if(allPoint.contains(point)) {
+            circlePath.reset();
+            mPath.reset();
+            return;
+        }
+        mPath.addCircle(mX, mY, 1, Path.Direction.CW);
         circlePath.reset();
-//        AnalyticPoint point = new AnalyticPoint(pointName, mX, mY);
-//        if(allPoint.contains(point)) {
-//            mPath.reset();
-//            return;
-//        }
-//        allPoint.add(point);
+
+        allPoint.add(point);
         // commit the path to our offscreen
         mCanvas.drawPath(mPath,  mPaint);
         // kill this so we don't double draw
         mPath.reset();
     }
 
+    public void setPoint(String pointName) {
+        this.pointName = pointName;
+        if(pointName == "peak") {
+            this.mPaint.setColor(Color.GREEN);
+        } else if (pointName == "center-mid") {
+            this.mPaint.setColor(Color.RED);
+        } else if (pointName == "patiole") {
+            this.mPaint.setColor(Color.BLUE);
+        }
+
+    }
+
     public void clear() {
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        allPoint.clear();
     }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -128,10 +144,10 @@ public class DrawingView extends View {
                 touch_start(x, y);
                 invalidate();
                 break;
-            case MotionEvent.ACTION_MOVE:
-                touch_move(x, y);
-                invalidate();
-                break;
+//            case MotionEvent.ACTION_MOVE:
+//                touch_move(x, y);
+//                invalidate();
+//                break;
             case MotionEvent.ACTION_UP:
                 touch_up();
                 invalidate();

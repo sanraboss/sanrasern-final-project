@@ -92,7 +92,7 @@ public class CameraActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         // get an image from the camera
-                        mCamera.takePicture(null, null, mPicture);
+                        mPreview.takePicture(mPicture);
 
                     }
                 }

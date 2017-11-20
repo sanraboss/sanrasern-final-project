@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (!checkCameraHardware(this)) {
-
+            //terminate the program
         }
         setContentView(R.layout.activity_main);
         initComponents();

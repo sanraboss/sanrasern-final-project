@@ -21,6 +21,30 @@
     </com.example.sanraboss.myfirstandroidapp.Class.DrawingView>
 
     <Button
+        android:id="@+id/draw_peak"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="peak"
+        android:layout_above="@+id/draw_center_mid"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+    <Button
+        android:id="@+id/draw_center_mid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="center-mid"
+        android:layout_above="@+id/draw_patiole"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+    <Button
+        android:id="@+id/draw_patiole"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="patiole"
+        android:layout_above="@+id/clear_drawing"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+    <Button
         android:id="@+id/clear_drawing"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

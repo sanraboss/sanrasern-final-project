@@ -17,6 +17,9 @@ public class PreviewActivity extends AppCompatActivity {
     private String pathToPhoto;
     private ImageView image;
     private Button clearButton;
+    private Button peakButton;
+    private Button centerMidButton;
+    private Button patioleButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +66,28 @@ public class PreviewActivity extends AppCompatActivity {
                 dv.clear();
             }
         });
+        peakButton = (Button) findViewById(R.id.draw_peak);
+        peakButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dv.setPoint("peak");
+            }
+        });
+        centerMidButton = (Button) findViewById(R.id.draw_center_mid);
+        centerMidButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dv.setPoint("center-mid");
+            }
+        });
+        patioleButton = (Button) findViewById(R.id.draw_patiole);
+        patioleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dv.setPoint("patiole");
+            }
+        });
+
     }
 //    public class DrawingView extends ViewGroup {
 //
