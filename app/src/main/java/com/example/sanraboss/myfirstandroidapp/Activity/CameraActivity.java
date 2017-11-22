@@ -29,48 +29,21 @@ import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
 public class CameraActivity extends AppCompatActivity {
 
-    private static final String TAG = "TAG";
+    private static final String TAG = "CAMERA_ACTIVITY";
     private Camera mCamera;
     private CameraPreview mPreview;
+    private Button retakeButton;
+    private Button confirmButton;
+    private Button captureButton;
+    private byte[] pictureByteData;
     private PictureCallback mPicture = new PictureCallback() {
 
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
-
-            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-            if (pictureFile == null){
-                return;
-            }
-
-            try {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
-                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                fos.write(bytes.toByteArray());
-                fos.close();
-                Matrix matrix = new Matrix();
-                matrix.postRotate(90);
-//                Log.d("bitmap height", bitmap.getHeight()+"");
-                Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),bitmap.getHeight(),matrix, true);
-                FileOutputStream fos2 = new FileOutputStream(pictureFile.toString());
-                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos2);
-                fos2.close();
-//                fos.write(data);
-//                fos.close();
-
-            } catch (FileNotFoundException e) {
-                Log.d(TAG, "File not found: " + e.getMessage());
-            } catch (IOException e) {
-                Log.d(TAG, "Error accessing file: " + e.getMessage());
-            }
-            //TODO: Ask to confirm picture
-            Intent i = new Intent(CameraActivity.this, PreviewActivity.class);
-            i.putExtra("pictureName", pictureFile.getAbsolutePath());
-            startActivity(i);
-
+            pictureByteData = data;
+            retakeButton.setVisibility(View.VISIBLE);
+            confirmButton.setVisibility(View.VISIBLE);
+            captureButton.setVisibility(View.INVISIBLE);
         }
     };
 
@@ -86,7 +59,27 @@ public class CameraActivity extends AppCompatActivity {
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
-        Button captureButton = (Button) findViewById(R.id.button_capture);
+        pictureByteData = null;
+        retakeButton = (Button) findViewById(R.id.button_retake);
+        retakeButton.setVisibility(View.INVISIBLE);
+        retakeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mPreview.retakePicture();
+                captureButton.setVisibility(View.VISIBLE);
+                retakeButton.setVisibility(View.INVISIBLE);
+                confirmButton.setVisibility(View.INVISIBLE);
+            }
+        });
+        confirmButton = (Button) findViewById(R.id.button_use_photo);
+        confirmButton.setVisibility(View.INVISIBLE);
+        confirmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                savePicture();
+            }
+        });
+        captureButton = (Button) findViewById(R.id.button_capture);
         captureButton.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -111,6 +104,44 @@ public class CameraActivity extends AppCompatActivity {
             mCamera.release();        // release the camera for other applications
             mCamera = null;
         }
+    }
+
+    private void savePicture() {
+        File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+        if (pictureFile == null) {
+            return;
+        }
+        if (pictureByteData == null) {
+            return;
+        }
+
+        try {
+            Bitmap bitmap = BitmapFactory.decodeByteArray(pictureByteData, 0, pictureByteData.length);
+            bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth(), bitmap.getHeight(), true);
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+
+            FileOutputStream fos = new FileOutputStream(pictureFile);
+            fos.write(bytes.toByteArray());
+            fos.close();
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90);
+//                Log.d("bitmap height", bitmap.getHeight()+"");
+            Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),bitmap.getHeight(),matrix, true);
+            FileOutputStream fos2 = new FileOutputStream(pictureFile.toString());
+            rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos2);
+            fos2.close();
+//                fos.write(data);
+//                fos.close();
+
+        } catch (FileNotFoundException e) {
+            Log.d(TAG, "File not found: " + e.getMessage());
+        } catch (IOException e) {
+            Log.d(TAG, "Error accessing file: " + e.getMessage());
+        }
+        Intent i = new Intent(CameraActivity.this, PreviewActivity.class);
+        i.putExtra("pictureName", pictureFile.getAbsolutePath());
+        startActivity(i);
     }
 
     public static Camera getCameraInstance(){
