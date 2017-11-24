@@ -12,7 +12,6 @@
         android:layout_height="match_parent"
         />
 
-
     <com.example.sanraboss.myfirstandroidapp.Class.DrawingView android:id="@+id/fbv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -20,6 +19,14 @@
         >
     </com.example.sanraboss.myfirstandroidapp.Class.DrawingView>
 
+    <Button
+        android:id="@+id/zoom_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Zoom Mode"
+        android:layout_above="@+id/draw_peak"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
     <Button
         android:id="@+id/draw_peak"
         android:layout_width="wrap_content"

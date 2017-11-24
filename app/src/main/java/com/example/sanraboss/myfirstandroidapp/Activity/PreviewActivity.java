@@ -2,8 +2,12 @@ package com.example.sanraboss.myfirstandroidapp.Activity;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -11,8 +15,9 @@ import android.widget.ImageView;
 import com.example.sanraboss.myfirstandroidapp.Class.DrawingView;
 import com.example.sanraboss.myfirstandroidapp.R;
 
-public class PreviewActivity extends AppCompatActivity {
+public class PreviewActivity extends AppCompatActivity implements View.OnTouchListener {
 
+    private final String TAG = "PREVIEW_ACTIVITY";
     DrawingView dv ;
     private String pathToPhoto;
     private ImageView image;
@@ -20,6 +25,21 @@ public class PreviewActivity extends AppCompatActivity {
     private Button peakButton;
     private Button centerMidButton;
     private Button patioleButton;
+    private Button zoomButton;
+
+    //Zoom Component
+    private boolean zoomMode = false;
+    private static final float MIN_ZOOM = 1f,MAX_ZOOM = 1f;
+    static final int NONE = 0;
+    static final int DRAG = 1;
+    static final int ZOOM = 2;
+    int mode = NONE;
+    PointF start = new PointF();
+    PointF mid = new PointF();
+    float oldDist = 1f;
+    Matrix matrix = new Matrix();
+    Matrix savedMatrix = new Matrix();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,16 +60,6 @@ public class PreviewActivity extends AppCompatActivity {
         dv = (DrawingView) findViewById(R.id.fbv);
         initComponents();
 
-
-//        mPaint = new Paint();
-//        mPaint.setAntiAlias(true);
-//        mPaint.setDither(true);
-//        mPaint.setColor(Color.GREEN);
-//        mPaint.setStyle(Paint.Style.STROKE);
-//        mPaint.setStrokeJoin(Paint.Join.ROUND);
-//        mPaint.setStrokeCap(Paint.Cap.ROUND);
-//        setContentView(dv);
-
     }
 
     private void initComponents() {
@@ -58,6 +68,7 @@ public class PreviewActivity extends AppCompatActivity {
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeFile(pathToPhoto,options);
         image.setImageBitmap(bitmap);
+        image.setOnTouchListener(this);
 
         clearButton = (Button) findViewById(R.id.clear_drawing);
         clearButton.setOnClickListener(new View.OnClickListener() {
@@ -67,6 +78,21 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
         peakButton = (Button) findViewById(R.id.draw_peak);
+        zoomButton = (Button) findViewById(R.id.zoom_mode);
+        zoomButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                zoomMode = !zoomMode;
+                if(zoomMode) {
+                    dv.setVisibility(View.INVISIBLE);
+                    zoomButton.setText("Draw Mode");
+                }
+                else {
+                    dv.setVisibility(View.VISIBLE);
+                    zoomButton.setText("Zoom Mode");
+                }
+            }
+        });
         peakButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -89,116 +115,128 @@ public class PreviewActivity extends AppCompatActivity {
         });
 
     }
-//    public class DrawingView extends ViewGroup {
-//
-//        public int width;
-//        public int height;
-//        private Bitmap mBitmap;
-//        private Canvas mCanvas;
-//        private Path mPath;
-//        private Paint mBitmapPaint;
-//        Context context;
-//        private Paint circlePaint;
-//        private Path circlePath;
-//        ImageView imageView;
-//
-//        public DrawingView(Context c) {
-//            super(c);
-//            context=c;
-//            mPath = new Path();
-//            mBitmapPaint = new Paint(Paint.DITHER_FLAG);
-//            circlePaint = new Paint();
-//            circlePath = new Path();
-//            circlePaint.setAntiAlias(true);
-//            circlePaint.setColor(Color.BLUE);
-//            circlePaint.setStyle(Paint.Style.STROKE);
-//            circlePaint.setStrokeJoin(Paint.Join.MITER);
-//            circlePaint.setStrokeWidth(4f);
-//            BitmapFactory.Options options = new BitmapFactory.Options();
-//            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-//            Bitmap bitmap = BitmapFactory.decodeFile(pathToPhoto,options);
-//            imageView = new ImageView(getContext());
-//            imageView.setBackgroundResource(R.drawable.test);
-////            imageView = new ImageView(getContext());
-////            imageView.setBackgroundResource(R.drawable.test);
-////            setBackgroundColor(Color.TRANSPARENT);
-////            setContentView(R.layout.drawing_layout);
-//        }
-//
-//        @Override
-//        protected void onLayout(boolean b, int i, int i1, int i2, int i3) {
-//
-//        }
-//
-//        @Override
-//        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-//            super.onSizeChanged(w, h, oldw, oldh);
-//
-//            mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-//            mCanvas = new Canvas(mBitmap);
-//        }
-//
-//        @Override
-//        protected void onDraw(Canvas canvas) {
-//            super.onDraw(canvas);
-//
-//            canvas.drawBitmap( mBitmap, 0, 0, mBitmapPaint);
-//            canvas.drawPath( mPath,  mPaint);
-//            canvas.drawPath( circlePath,  circlePaint);
-//        }
-//
-//        private float mX, mY;
-//        private static final float TOUCH_TOLERANCE = 4;
-//
-//        private void touch_start(float x, float y) {
-//            mPath.reset();
-//            mPath.moveTo(x, y);
-//            mX = x;
-//            mY = y;
-//        }
-//
-//        private void touch_move(float x, float y) {
-//            float dx = Math.abs(x - mX);
-//            float dy = Math.abs(y - mY);
-//            if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-//                mPath.quadTo(mX, mY, (x + mX)/2, (y + mY)/2);
-//                mX = x;
-//                mY = y;
-//
-//                circlePath.reset();
-//                circlePath.addCircle(mX, mY, 30, Path.Direction.CW);
-//            }
-//        }
-//
-//        private void touch_up() {
-//            mPath.lineTo(mX, mY);
-//            circlePath.reset();
-//            // commit the path to our offscreen
-//            mCanvas.drawPath(mPath,  mPaint);
-//            // kill this so we don't double draw
-//            mPath.reset();
-//        }
-//
-//        @Override
-//        public boolean onTouchEvent(MotionEvent event) {
-//            float x = event.getX();
-//            float y = event.getY();
-//
-//            switch (event.getAction()) {
-//                case MotionEvent.ACTION_DOWN:
-//                    touch_start(x, y);
-//                    invalidate();
-//                    break;
-//                case MotionEvent.ACTION_MOVE:
-//                    touch_move(x, y);
-//                    invalidate();
-//                    break;
-//                case MotionEvent.ACTION_UP:
-//                    touch_up();
-//                    invalidate();
-//                    break;
-//            }
-//            return true;
-//        }
-//    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+
+        ImageView view = (ImageView) v;
+        view.setScaleType(ImageView.ScaleType.MATRIX);
+        float scale;
+        Log.d(TAG, event.toString());
+        dumpEvent(event);
+        // Handle touch events here...
+
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:   // first finger down only
+                savedMatrix.set(matrix);
+                start.set(event.getX(), event.getY());
+                Log.d(TAG, "mode=DRAG"); // write to LogCat
+                mode = DRAG;
+                break;
+
+            case MotionEvent.ACTION_UP: // first finger lifted
+
+            case MotionEvent.ACTION_POINTER_UP: // second finger lifted
+
+                mode = NONE;
+                Log.d(TAG, "mode=NONE");
+                break;
+
+            case MotionEvent.ACTION_POINTER_DOWN: // first and second finger down
+
+                oldDist = spacing(event);
+                Log.d(TAG, "oldDist=" + oldDist);
+                if (oldDist > 5f) {
+                    savedMatrix.set(matrix);
+                    midPoint(mid, event);
+                    mode = ZOOM;
+                    Log.d(TAG, "mode=ZOOM");
+                }
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+
+                if (mode == DRAG)
+                {
+                    matrix.set(savedMatrix);
+                    matrix.postTranslate(event.getX() - start.x, event.getY() - start.y); // create the transformation in the matrix  of points
+                }
+                else if (mode == ZOOM)
+                {
+                    // pinch zooming
+                    float newDist = spacing(event);
+                    Log.d(TAG, "newDist=" + newDist);
+                    if (newDist > 5f)
+                    {
+                        matrix.set(savedMatrix);
+                        scale = newDist / oldDist; // setting the scaling of the
+                        // matrix...if scale > 1 means
+                        // zoom in...if scale < 1 means
+                        // zoom out
+                        matrix.postScale(scale, scale, mid.x, mid.y);
+                    }
+                }
+                break;
+        }
+
+        view.setImageMatrix(matrix); // display the transformation on screen
+
+        return true; // indicate event was handled
+    }
+    /*
+     * --------------------------------------------------------------------------
+     * Method: spacing Parameters: MotionEvent Returns: float Description:
+     * checks the spacing between the two fingers on touch
+     * ----------------------------------------------------
+     */
+
+    private float spacing(MotionEvent event)
+    {
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float) Math.sqrt(x * x + y * y);
+    }
+    /*
+     * --------------------------------------------------------------------------
+     * Method: midPoint Parameters: PointF object, MotionEvent Returns: void
+     * Description: calculates the midpoint between the two fingers
+     * ------------------------------------------------------------
+     */
+
+    private void midPoint(PointF point, MotionEvent event)
+    {
+        float x = event.getX(0) + event.getX(1);
+        float y = event.getY(0) + event.getY(1);
+        point.set(x / 2, y / 2);
+    }
+    /** Show an event in the LogCat view, for debugging */
+    private void dumpEvent(MotionEvent event)
+    {
+        String names[] = { "DOWN", "UP", "MOVE", "CANCEL", "OUTSIDE","POINTER_DOWN", "POINTER_UP", "7?", "8?", "9?" };
+        StringBuilder sb = new StringBuilder();
+        int action = event.getAction();
+        int actionCode = action & MotionEvent.ACTION_MASK;
+        sb.append("event ACTION_").append(names[actionCode]);
+
+        if (actionCode == MotionEvent.ACTION_POINTER_DOWN || actionCode == MotionEvent.ACTION_POINTER_UP)
+        {
+            sb.append("(pid ").append(action >> MotionEvent.ACTION_POINTER_ID_SHIFT);
+            sb.append(")");
+        }
+
+        sb.append("[");
+        for (int i = 0; i < event.getPointerCount(); i++)
+        {
+            sb.append("#").append(i);
+            sb.append("(pid ").append(event.getPointerId(i));
+            sb.append(")=").append((int) event.getX(i));
+            sb.append(",").append((int) event.getY(i));
+            if (i + 1 < event.getPointerCount())
+                sb.append(";");
+        }
+
+        sb.append("]");
+        Log.d("Touch Events ---------", sb.toString());
+    }
+
 }
